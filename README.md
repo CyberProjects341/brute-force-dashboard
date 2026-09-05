@@ -55,3 +55,24 @@ An interactive Security Operations Center (SOC) monitoring platform engineered w
                     │
                     ▼
 [Leaflet.js UI + CSS (Auto-Polling every 5s)]
+
+Installation & Setup
+1. Clone the Repository
+
+git clone [https://github.com/Welcome2020/brute-force-dashboard.git](https://github.com/Welcome2020/brute-force-dashboard.git)
+cd SOC Brute Force Detection Dashboard
+
+2. Environment Setup & Dependencies
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+.\venv\Scripts\Activate.ps1   # Linux/macOS: source venv/bin/activate
+
+# Install required packages
+pip install -r requirements.txt
+
+3. Run the Dashboard
+
+python app.py or you can run py app.py
