@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOC Brute Force Detection Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>SOC Brute Force Dashboard</h1>
+        <p>Real-time Windows Failed Login Tracking & Geo-IP Mapping</p>
+    </header>
+    <div class="metrics-container">
+        <div class="card">
+            <h3>Total Failed Logins</h3>
+            <p id="metric-total">0</p>
+        </div>
+        <div class="card alert">
+            <h3>Unique Attacking IPs</h3>
+            <p id="metric-ips">0</p>
+        </div>
+    </div>
+    <div class="dashboard-grid">
+        <div id="map"></div>
+        <div class="log-container">
+            <h2>Real-time Audit Trail</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Target User</th>
+                            <th>Source IP</th>
+                            <th>Sub-Status</th>
+                            <th>Country</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        let markers = [];
+
+        function updateDashboard() {
+            fetch('/api/data')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('metric-total').innerText = data.metrics.total_failed;
+                    document.getElementById('metric-ips').innerText = data.metrics.unique_ips;
+
+                    markers.forEach(m => map.removeLayer(m));
+                    markers = [];
+
+                    const tbody = document.getElementById('log-table-body');
+                    tbody.innerHTML = '';
+
+                    data.logs.forEach(log => {
+                        const row = document.createElement('tr');
+                        if (log.username === 'Administrator' || log.username === 'root') {
+                            row.className = 'high-risk';
+                        }
+                        row.innerHTML = `
+                            <td>${log.timestamp}</td>
+                            <td><strong>${log.username}</strong></td>
+                            <td>${log.source_ip}</td>
+                            <td><code>${log.sub_status}</code></td>
+                            <td>${log.country}</td>
+                        `;
+                        tbody.appendChild(row);
+
+                        if (log.latitude && log.longitude) {
+                            const marker = L.circleMarker([log.latitude, log.longitude], {
+                                color: '#ef4444',
+                                fillColor: '#f43f5e',
+                                fillOpacity: 0.6,
+                                radius: 6
+                            })
+                            .bindPopup(`<b>Target:</b> ${log.username}<br><b>IP:</b> ${log.source_ip}<br><b>Location:</b> ${log.country}`)
+                            .addTo(map);
+                            markers.push(marker);
+                        }
+                    });
+                })
+                .catch(err => console.error("Error fetching logs:", err));
+        }
+
+        updateDashboard();
+        setInterval(updateDashboard, 5000);
+    </script>
+</body>
+</html>
