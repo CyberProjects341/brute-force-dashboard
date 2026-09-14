@@ -1,4 +1,6 @@
 # Real-Time SOC Brute Force Detection Dashboard 
+<img width="1920" height="1080" alt="dashboard-preview" src="https://github.com/user-attachments/assets/3f05b36a-b80e-4d36-acf0-8734d04067a8" />
+
 
 An interactive Security Operations Center (SOC) monitoring platform engineered with Python (Flask), SQLite, and Leaflet.js to ingest, parse, aggregate, and geolocate Windows Event ID 4625 (Failed Logon) audit telemetry in real time.
 
